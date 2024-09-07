@@ -3,7 +3,7 @@
 <html lang="en">
 <head><meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>iterative_lengthening_search</title><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+<title>web_pages</title><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
 <style type="text/css">
     pre { line-height: 125%; }
 td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
@@ -7509,99 +7509,46 @@ a.anchor-link {
 </style>
 <!-- End of mermaid configuration --></head>
 <body class="jp-Notebook" data-jp-theme-light="true" data-jp-theme-name="JupyterLab Light">
-<main><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=ef35fc56-180a-4d1a-9099-bed021f6e0ee">
+<main><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=58d85ac7-9b24-4233-bbdb-cf5186e7f064">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [36]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [61]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">search_2</span> <span class="kn">import</span> <span class="o">*</span>
+<div class="highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">from</span> <span class="nn">bs4</span> <span class="kn">import</span> <span class="n">BeautifulSoup</span>
 
-<span class="c1"># My implementation of iterative lengthening search from problem 3.17.</span>
-<span class="c1"># I don't really see the point in this algorithm - just use uniform-cost search?</span>
-<span class="c1"># Maybe it is for people who want partial solutions???</span>
+<span class="kn">from</span> <span class="nn">search_2</span> <span class="kn">import</span> <span class="o">*</span>
 
-<span class="k">def</span> <span class="nf">best_first_limited_cost_search</span><span class="p">(</span><span class="n">problem</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">cost_limit</span><span class="p">):</span>
-    <span class="n">node</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="n">problem</span><span class="o">.</span><span class="n">initial</span><span class="p">)</span>
-    <span class="n">frontier</span> <span class="o">=</span> <span class="n">PriorityQueue</span><span class="p">([</span><span class="n">node</span><span class="p">],</span> <span class="n">key</span><span class="o">=</span><span class="n">f</span><span class="p">)</span>
-    <span class="n">reached</span> <span class="o">=</span> <span class="p">{</span><span class="n">problem</span><span class="o">.</span><span class="n">initial</span> <span class="p">:</span> <span class="n">node</span><span class="p">}</span>
-    <span class="n">result</span> <span class="o">=</span> <span class="n">failure</span>
-    <span class="n">lowest_path_cost</span> <span class="o">=</span> <span class="kc">None</span><span class="p">;</span>
-    <span class="k">while</span> <span class="n">frontier</span><span class="p">:</span>
-        <span class="n">node</span>  <span class="o">=</span> <span class="n">frontier</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">problem</span><span class="o">.</span><span class="n">is_goal</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">state</span><span class="p">):</span>
-            <span class="c1"># we found a solution</span>
-            <span class="k">return</span> <span class="n">node</span>
-        <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">expand</span><span class="p">(</span><span class="n">problem</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
-            <span class="n">s</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">state</span>
-            <span class="c1"># if the path_cost is larger than cost_limit, we need to ignore this child.</span>
-            <span class="k">if</span> <span class="n">child</span><span class="o">.</span><span class="n">path_cost</span> <span class="o">&gt;</span> <span class="n">cost_limit</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">lowest_path_cost</span> <span class="o">==</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">child</span><span class="o">.</span><span class="n">path_cost</span> <span class="o">&lt;</span> <span class="n">lowest_path_cost</span><span class="p">:</span>
-                    <span class="n">lowest_path_cost</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">path_cost</span>
-                    <span class="n">result</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s1">'cost_limit_reached'</span><span class="p">,</span>
-                                  <span class="n">path_cost</span> <span class="o">=</span> <span class="n">lowest_path_cost</span><span class="p">,</span>
-                                  <span class="n">parent</span> <span class="o">=</span> <span class="n">node</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="n">s</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">reached</span> <span class="ow">or</span> <span class="n">child</span><span class="o">.</span><span class="n">path_cost</span> <span class="o">&lt;</span> <span class="n">reached</span><span class="p">[</span><span class="n">s</span><span class="p">]</span><span class="o">.</span><span class="n">path_cost</span><span class="p">:</span>
-                <span class="n">reached</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="n">child</span>
-                <span class="n">frontier</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">result</span>
+<span class="n">start_url</span> <span class="o">=</span> <span class="s2">"https://flatspot.com"</span>
+<span class="n">end_url</span> <span class="o">=</span> <span class="s2">"https://support.google.com/youtube/answer/3399767?hl=en&amp;ref_topic=9282365"</span>
 
-<span class="k">def</span> <span class="nf">iterative_lengthening_search</span><span class="p">(</span><span class="n">problem</span><span class="p">):</span>
-    <span class="n">n</span> <span class="o">=</span> <span class="n">best_first_limited_cost_search</span><span class="p">(</span><span class="n">problem</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-    <span class="n">iteration</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="k">while</span><span class="p">(</span><span class="n">n</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="s1">'cost_limit_reached'</span><span class="p">):</span>
-        <span class="n">n</span> <span class="o">=</span> <span class="n">best_first_limited_cost_search</span><span class="p">(</span><span class="n">problem</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">n</span><span class="o">.</span><span class="n">path_cost</span><span class="p">)</span>
-        <span class="n">iteration</span> <span class="o">=</span> <span class="n">iteration</span> <span class="o">+</span> <span class="mi">1</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">path_states</span><span class="p">(</span><span class="n">n</span><span class="p">))</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">iteration</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">n</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=99015fa1-471a-4149-bfe1-4bd7f12671fd">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [37]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="n">romania</span> <span class="o">=</span> <span class="n">Map</span><span class="p">(</span>
-    <span class="p">{(</span><span class="s1">'O'</span><span class="p">,</span> <span class="s1">'Z'</span><span class="p">):</span>  <span class="mi">71</span><span class="p">,</span> <span class="p">(</span><span class="s1">'O'</span><span class="p">,</span> <span class="s1">'S'</span><span class="p">):</span> <span class="mi">151</span><span class="p">,</span> <span class="p">(</span><span class="s1">'A'</span><span class="p">,</span> <span class="s1">'Z'</span><span class="p">):</span> <span class="mi">75</span><span class="p">,</span> <span class="p">(</span><span class="s1">'A'</span><span class="p">,</span> <span class="s1">'S'</span><span class="p">):</span> <span class="mi">140</span><span class="p">,</span> <span class="p">(</span><span class="s1">'A'</span><span class="p">,</span> <span class="s1">'T'</span><span class="p">):</span> <span class="mi">118</span><span class="p">,</span> 
-     <span class="p">(</span><span class="s1">'L'</span><span class="p">,</span> <span class="s1">'T'</span><span class="p">):</span> <span class="mi">111</span><span class="p">,</span> <span class="p">(</span><span class="s1">'L'</span><span class="p">,</span> <span class="s1">'M'</span><span class="p">):</span>  <span class="mi">70</span><span class="p">,</span> <span class="p">(</span><span class="s1">'D'</span><span class="p">,</span> <span class="s1">'M'</span><span class="p">):</span> <span class="mi">75</span><span class="p">,</span> <span class="p">(</span><span class="s1">'C'</span><span class="p">,</span> <span class="s1">'D'</span><span class="p">):</span> <span class="mi">120</span><span class="p">,</span> <span class="p">(</span><span class="s1">'C'</span><span class="p">,</span> <span class="s1">'R'</span><span class="p">):</span> <span class="mi">146</span><span class="p">,</span> 
-     <span class="p">(</span><span class="s1">'C'</span><span class="p">,</span> <span class="s1">'P'</span><span class="p">):</span> <span class="mi">138</span><span class="p">,</span> <span class="p">(</span><span class="s1">'R'</span><span class="p">,</span> <span class="s1">'S'</span><span class="p">):</span>  <span class="mi">80</span><span class="p">,</span> <span class="p">(</span><span class="s1">'F'</span><span class="p">,</span> <span class="s1">'S'</span><span class="p">):</span> <span class="mi">99</span><span class="p">,</span> <span class="p">(</span><span class="s1">'B'</span><span class="p">,</span> <span class="s1">'F'</span><span class="p">):</span> <span class="mi">211</span><span class="p">,</span> <span class="p">(</span><span class="s1">'B'</span><span class="p">,</span> <span class="s1">'P'</span><span class="p">):</span> <span class="mi">101</span><span class="p">,</span> 
-     <span class="p">(</span><span class="s1">'B'</span><span class="p">,</span> <span class="s1">'G'</span><span class="p">):</span>  <span class="mi">90</span><span class="p">,</span> <span class="p">(</span><span class="s1">'B'</span><span class="p">,</span> <span class="s1">'U'</span><span class="p">):</span>  <span class="mi">85</span><span class="p">,</span> <span class="p">(</span><span class="s1">'H'</span><span class="p">,</span> <span class="s1">'U'</span><span class="p">):</span> <span class="mi">98</span><span class="p">,</span> <span class="p">(</span><span class="s1">'E'</span><span class="p">,</span> <span class="s1">'H'</span><span class="p">):</span>  <span class="mi">86</span><span class="p">,</span> <span class="p">(</span><span class="s1">'U'</span><span class="p">,</span> <span class="s1">'V'</span><span class="p">):</span> <span class="mi">142</span><span class="p">,</span> 
-     <span class="p">(</span><span class="s1">'I'</span><span class="p">,</span> <span class="s1">'V'</span><span class="p">):</span>  <span class="mi">92</span><span class="p">,</span> <span class="p">(</span><span class="s1">'I'</span><span class="p">,</span> <span class="s1">'N'</span><span class="p">):</span>  <span class="mi">87</span><span class="p">,</span> <span class="p">(</span><span class="s1">'P'</span><span class="p">,</span> <span class="s1">'R'</span><span class="p">):</span> <span class="mi">97</span><span class="p">},</span>
-    <span class="p">{</span><span class="s1">'A'</span><span class="p">:</span> <span class="p">(</span> <span class="mi">76</span><span class="p">,</span> <span class="mi">497</span><span class="p">),</span> <span class="s1">'B'</span><span class="p">:</span> <span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="mi">327</span><span class="p">),</span> <span class="s1">'C'</span><span class="p">:</span> <span class="p">(</span><span class="mi">246</span><span class="p">,</span> <span class="mi">285</span><span class="p">),</span> <span class="s1">'D'</span><span class="p">:</span> <span class="p">(</span><span class="mi">160</span><span class="p">,</span> <span class="mi">296</span><span class="p">),</span> <span class="s1">'E'</span><span class="p">:</span> <span class="p">(</span><span class="mi">558</span><span class="p">,</span> <span class="mi">294</span><span class="p">),</span> 
-     <span class="s1">'F'</span><span class="p">:</span> <span class="p">(</span><span class="mi">285</span><span class="p">,</span> <span class="mi">460</span><span class="p">),</span> <span class="s1">'G'</span><span class="p">:</span> <span class="p">(</span><span class="mi">368</span><span class="p">,</span> <span class="mi">257</span><span class="p">),</span> <span class="s1">'H'</span><span class="p">:</span> <span class="p">(</span><span class="mi">548</span><span class="p">,</span> <span class="mi">355</span><span class="p">),</span> <span class="s1">'I'</span><span class="p">:</span> <span class="p">(</span><span class="mi">488</span><span class="p">,</span> <span class="mi">535</span><span class="p">),</span> <span class="s1">'L'</span><span class="p">:</span> <span class="p">(</span><span class="mi">162</span><span class="p">,</span> <span class="mi">379</span><span class="p">),</span>
-     <span class="s1">'M'</span><span class="p">:</span> <span class="p">(</span><span class="mi">160</span><span class="p">,</span> <span class="mi">343</span><span class="p">),</span> <span class="s1">'N'</span><span class="p">:</span> <span class="p">(</span><span class="mi">407</span><span class="p">,</span> <span class="mi">561</span><span class="p">),</span> <span class="s1">'O'</span><span class="p">:</span> <span class="p">(</span><span class="mi">117</span><span class="p">,</span> <span class="mi">580</span><span class="p">),</span> <span class="s1">'P'</span><span class="p">:</span> <span class="p">(</span><span class="mi">311</span><span class="p">,</span> <span class="mi">372</span><span class="p">),</span> <span class="s1">'R'</span><span class="p">:</span> <span class="p">(</span><span class="mi">227</span><span class="p">,</span> <span class="mi">412</span><span class="p">),</span>
-     <span class="s1">'S'</span><span class="p">:</span> <span class="p">(</span><span class="mi">187</span><span class="p">,</span> <span class="mi">463</span><span class="p">),</span> <span class="s1">'T'</span><span class="p">:</span> <span class="p">(</span> <span class="mi">83</span><span class="p">,</span> <span class="mi">414</span><span class="p">),</span> <span class="s1">'U'</span><span class="p">:</span> <span class="p">(</span><span class="mi">471</span><span class="p">,</span> <span class="mi">363</span><span class="p">),</span> <span class="s1">'V'</span><span class="p">:</span> <span class="p">(</span><span class="mi">535</span><span class="p">,</span> <span class="mi">473</span><span class="p">),</span> <span class="s1">'Z'</span><span class="p">:</span> <span class="p">(</span><span class="mi">92</span><span class="p">,</span> <span class="mi">539</span><span class="p">)})</span>
+<span class="k">def</span> <span class="nf">extract_links</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
+    <span class="n">links</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">source_url</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+    <span class="n">soup</span> <span class="o">=</span> <span class="n">BeautifulSoup</span><span class="p">(</span><span class="n">source_url</span><span class="o">.</span><span class="n">content</span><span class="p">,</span> <span class="s2">"html.parser"</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">link</span> <span class="ow">in</span> <span class="n">soup</span><span class="o">.</span><span class="n">find_all</span><span class="p">(</span><span class="s1">'a'</span><span class="p">,</span><span class="n">href</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">link</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'href'</span><span class="p">)</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"https://"</span><span class="p">)</span> <span class="ow">and</span> <span class="n">link</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"href"</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">links</span><span class="p">:</span>
+            <span class="n">links</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">link</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'href'</span><span class="p">))</span>
 
-<span class="n">r1</span> <span class="o">=</span> <span class="n">RouteProblem</span><span class="p">(</span><span class="s1">'A'</span><span class="p">,</span> <span class="s1">'B'</span><span class="p">,</span> <span class="nb">map</span><span class="o">=</span><span class="n">romania</span><span class="p">)</span>
-<span class="n">r2</span> <span class="o">=</span> <span class="n">RouteProblem</span><span class="p">(</span><span class="s1">'N'</span><span class="p">,</span> <span class="s1">'L'</span><span class="p">,</span> <span class="nb">map</span><span class="o">=</span><span class="n">romania</span><span class="p">)</span>
-<span class="n">r3</span> <span class="o">=</span> <span class="n">RouteProblem</span><span class="p">(</span><span class="s1">'E'</span><span class="p">,</span> <span class="s1">'T'</span><span class="p">,</span> <span class="nb">map</span><span class="o">=</span><span class="n">romania</span><span class="p">)</span>
-<span class="n">r4</span> <span class="o">=</span> <span class="n">RouteProblem</span><span class="p">(</span><span class="s1">'O'</span><span class="p">,</span> <span class="s1">'M'</span><span class="p">,</span> <span class="nb">map</span><span class="o">=</span><span class="n">romania</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=9e580734-b4f8-4d48-82d2-adcac10f8714">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [38]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="n">path_states</span><span class="p">(</span><span class="n">iterative_lengthening_search</span><span class="p">(</span><span class="n">r1</span><span class="p">))</span>
-<span class="n">path_states</span><span class="p">(</span><span class="n">iterative_lengthening_search</span><span class="p">(</span><span class="n">r2</span><span class="p">))</span>
-<span class="n">path_states</span><span class="p">(</span><span class="n">iterative_lengthening_search</span><span class="p">(</span><span class="n">r3</span><span class="p">))</span>
-<span class="n">path_states</span><span class="p">(</span><span class="n">iterative_lengthening_search</span><span class="p">(</span><span class="n">r4</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">links</span>
+
+<span class="k">class</span> <span class="nc">WebPageProblem</span><span class="p">(</span><span class="n">Problem</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">initial</span><span class="o">=</span><span class="n">start_url</span><span class="p">,</span> <span class="n">goal</span><span class="o">=</span><span class="n">end_url</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
+        <span class="n">Problem</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">initial</span><span class="o">=</span><span class="n">initial</span><span class="p">,</span> <span class="n">goal</span><span class="o">=</span><span class="n">goal</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">result</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">action</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">action</span>
+
+    <span class="k">def</span> <span class="nf">actions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+        <span class="n">links</span> <span class="o">=</span> <span class="n">extract_links</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">links</span>
+
+
+<span class="n">w</span> <span class="o">=</span> <span class="n">WebPageProblem</span><span class="p">(</span><span class="n">start_url</span><span class="p">,</span> <span class="n">end_url</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">path_states</span><span class="p">(</span><span class="n">breadth_first_search</span><span class="p">(</span><span class="n">w</span><span class="p">)))</span>
 </pre></div>
 </div>
 </div>
@@ -7614,132 +7561,8 @@ a.anchor-link {
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>['A', 'cost_limit_reached']
-['A', 'cost_limit_reached']
-['A', 'Z', 'cost_limit_reached']
-['A', 'Z', 'cost_limit_reached']
-['A', 'Z', 'O', 'cost_limit_reached']
-['A', 'S', 'cost_limit_reached']
-['A', 'T', 'cost_limit_reached']
-['A', 'T', 'cost_limit_reached']
-['A', 'S', 'cost_limit_reached']
-['A', 'S', 'cost_limit_reached']
-['A', 'S', 'cost_limit_reached']
-['A', 'Z', 'O', 'cost_limit_reached']
-['A', 'T', 'L', 'cost_limit_reached']
-['A', 'S', 'R', 'cost_limit_reached']
-['A', 'S', 'R', 'cost_limit_reached']
-['A', 'S', 'F', 'cost_limit_reached']
-['A', 'T', 'L', 'cost_limit_reached']
-['A', 'S', 'R', 'cost_limit_reached']
-['A', 'T', 'L', 'M', 'cost_limit_reached']
-['A', 'T', 'L', 'M', 'cost_limit_reached']
-['A', 'S', 'R', 'P', 'cost_limit_reached']
-['A', 'S', 'R', 'P', 'cost_limit_reached']
-['A', 'S', 'R', 'P', 'B']
-23
-['N', 'I', 'cost_limit_reached']
-['N', 'I', 'cost_limit_reached']
-['N', 'I', 'V', 'cost_limit_reached']
-['N', 'I', 'V', 'cost_limit_reached']
-['N', 'I', 'V', 'U', 'cost_limit_reached']
-['N', 'I', 'V', 'U', 'cost_limit_reached']
-['N', 'I', 'V', 'U', 'cost_limit_reached']
-['N', 'I', 'V', 'U', 'B', 'cost_limit_reached']
-['N', 'I', 'V', 'U', 'B', 'cost_limit_reached']
-['N', 'I', 'V', 'U', 'H', 'cost_limit_reached']
-['N', 'I', 'V', 'U', 'B', 'cost_limit_reached']
-['N', 'I', 'V', 'U', 'H', 'cost_limit_reached']
-['N', 'I', 'V', 'U', 'B', 'G', 'cost_limit_reached']
-['N', 'I', 'V', 'U', 'H', 'E', 'cost_limit_reached']
-['N', 'I', 'V', 'U', 'B', 'P', 'cost_limit_reached']
-['N', 'I', 'V', 'U', 'B', 'P', 'cost_limit_reached']
-['N', 'I', 'V', 'U', 'B', 'cost_limit_reached']
-['N', 'I', 'V', 'U', 'B', 'P', 'cost_limit_reached']
-['N', 'I', 'V', 'U', 'B', 'P', 'R', 'cost_limit_reached']
-['N', 'I', 'V', 'U', 'B', 'P', 'R', 'cost_limit_reached']
-['N', 'I', 'V', 'U', 'B', 'F', 'cost_limit_reached']
-['N', 'I', 'V', 'U', 'B', 'P', 'R', 'cost_limit_reached']
-['N', 'I', 'V', 'U', 'B', 'P', 'R', 'S', 'cost_limit_reached']
-['N', 'I', 'V', 'U', 'B', 'P', 'C', 'cost_limit_reached']
-['N', 'I', 'V', 'U', 'B', 'P', 'C', 'cost_limit_reached']
-['N', 'I', 'V', 'U', 'B', 'P', 'C', 'cost_limit_reached']
-['N', 'I', 'V', 'U', 'B', 'P', 'R', 'S', 'cost_limit_reached']
-['N', 'I', 'V', 'U', 'B', 'F', 'cost_limit_reached']
-['N', 'I', 'V', 'U', 'B', 'P', 'R', 'S', 'cost_limit_reached']
-['N', 'I', 'V', 'U', 'B', 'P', 'C', 'D', 'cost_limit_reached']
-['N', 'I', 'V', 'U', 'B', 'P', 'C', 'D', 'cost_limit_reached']
-['N', 'I', 'V', 'U', 'B', 'P', 'R', 'S', 'A', 'cost_limit_reached']
-['N', 'I', 'V', 'U', 'B', 'P', 'R', 'S', 'O', 'cost_limit_reached']
-['N', 'I', 'V', 'U', 'B', 'P', 'C', 'D', 'M', 'cost_limit_reached']
-['N', 'I', 'V', 'U', 'B', 'P', 'C', 'D', 'M', 'L']
-35
-['E', 'H', 'cost_limit_reached']
-['E', 'H', 'cost_limit_reached']
-['E', 'H', 'U', 'cost_limit_reached']
-['E', 'H', 'U', 'cost_limit_reached']
-['E', 'H', 'U', 'cost_limit_reached']
-['E', 'H', 'U', 'B', 'cost_limit_reached']
-['E', 'H', 'U', 'B', 'cost_limit_reached']
-['E', 'H', 'U', 'B', 'cost_limit_reached']
-['E', 'H', 'U', 'V', 'cost_limit_reached']
-['E', 'H', 'U', 'B', 'G', 'cost_limit_reached']
-['E', 'H', 'U', 'B', 'P', 'cost_limit_reached']
-['E', 'H', 'U', 'V', 'cost_limit_reached']
-['E', 'H', 'U', 'B', 'P', 'cost_limit_reached']
-['E', 'H', 'U', 'B', 'cost_limit_reached']
-['E', 'H', 'U', 'V', 'I', 'cost_limit_reached']
-['E', 'H', 'U', 'B', 'P', 'cost_limit_reached']
-['E', 'H', 'U', 'V', 'I', 'cost_limit_reached']
-['E', 'H', 'U', 'B', 'P', 'R', 'cost_limit_reached']
-['E', 'H', 'U', 'B', 'P', 'R', 'cost_limit_reached']
-['E', 'H', 'U', 'B', 'F', 'cost_limit_reached']
-['E', 'H', 'U', 'V', 'I', 'N', 'cost_limit_reached']
-['E', 'H', 'U', 'B', 'P', 'R', 'cost_limit_reached']
-['E', 'H', 'U', 'B', 'P', 'R', 'S', 'cost_limit_reached']
-['E', 'H', 'U', 'B', 'P', 'C', 'cost_limit_reached']
-['E', 'H', 'U', 'B', 'P', 'C', 'cost_limit_reached']
-['E', 'H', 'U', 'B', 'P', 'C', 'cost_limit_reached']
-['E', 'H', 'U', 'B', 'P', 'R', 'S', 'cost_limit_reached']
-['E', 'H', 'U', 'B', 'F', 'cost_limit_reached']
-['E', 'H', 'U', 'B', 'P', 'R', 'S', 'cost_limit_reached']
-['E', 'H', 'U', 'B', 'P', 'C', 'D', 'cost_limit_reached']
-['E', 'H', 'U', 'B', 'P', 'C', 'D', 'cost_limit_reached']
-['E', 'H', 'U', 'B', 'P', 'R', 'S', 'A', 'cost_limit_reached']
-['E', 'H', 'U', 'B', 'P', 'R', 'S', 'O', 'cost_limit_reached']
-['E', 'H', 'U', 'B', 'P', 'C', 'D', 'M', 'cost_limit_reached']
-['E', 'H', 'U', 'B', 'P', 'C', 'D', 'M', 'cost_limit_reached']
-['E', 'H', 'U', 'B', 'P', 'R', 'S', 'A', 'cost_limit_reached']
-['E', 'H', 'U', 'B', 'P', 'R', 'S', 'A', 'T']
-37
-['O', 'Z', 'cost_limit_reached']
-['O', 'Z', 'cost_limit_reached']
-['O', 'cost_limit_reached']
-['O', 'Z', 'A', 'cost_limit_reached']
-['O', 'S', 'cost_limit_reached']
-['O', 'S', 'cost_limit_reached']
-['O', 'Z', 'A', 'cost_limit_reached']
-['O', 'Z', 'A', 'cost_limit_reached']
-['O', 'S', 'cost_limit_reached']
-['O', 'S', 'cost_limit_reached']
-['O', 'S', 'R', 'cost_limit_reached']
-['O', 'S', 'R', 'cost_limit_reached']
-['O', 'S', 'F', 'cost_limit_reached']
-['O', 'Z', 'A', 'T', 'cost_limit_reached']
-['O', 'S', 'R', 'cost_limit_reached']
-['O', 'Z', 'A', 'T', 'cost_limit_reached']
-['O', 'S', 'R', 'P', 'cost_limit_reached']
-['O', 'S', 'R', 'P', 'cost_limit_reached']
-['O', 'Z', 'A', 'T', 'L', 'cost_limit_reached']
-['O', 'Z', 'A', 'T', 'L', 'M']
-20
+<pre>['https://flatspot.com', 'https://youtube.com/channel/UCXhZ35FXbrWJ8jnql3Zootg', 'https://www.youtube.com/about/policies/', 'https://support.google.com/youtube/answer/3399767?hl=en&amp;ref_topic=9282365']
 </pre>
-</div>
-</div>
-<div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[38]:</div>
-<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain" tabindex="0">
-<pre>['O', 'Z', 'A', 'T', 'L', 'M']</pre>
 </div>
 </div>
 </div>

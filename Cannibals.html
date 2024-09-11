@@ -7514,7 +7514,7 @@ a.anchor-link {
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [19]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [4]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">search_2</span> <span class="kn">import</span> <span class="o">*</span>
@@ -7528,7 +7528,7 @@ a.anchor-link {
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [46]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [45]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span><span class="n">ys</span><span class="p">):</span>
@@ -7553,24 +7553,33 @@ a.anchor-link {
                            <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)]</span>
         
     <span class="k">def</span> <span class="nf">result</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">action</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">add</span><span class="p">(</span><span class="n">action</span><span class="p">,</span><span class="n">state</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">add</span><span class="p">(</span><span class="n">action</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span>
     
     <span class="k">def</span> <span class="nf">actions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
         <span class="n">legit_directions</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">directions</span><span class="p">:</span>
-            <span class="n">result</span> <span class="o">=</span> <span class="n">add</span><span class="p">(</span><span class="n">d</span><span class="p">,</span><span class="n">state</span><span class="p">)</span>
-            <span class="c1"># if more cannibals than missionaries</span>
-            <span class="k">if</span><span class="p">(</span><span class="n">state</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">state</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">or</span> <span class="n">state</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">state</span><span class="p">[</span><span class="mi">4</span><span class="p">]):</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">add</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span>
+            <span class="c1"># if more cannibals than missionaries, but if there are no missionaries </span>
+            <span class="c1"># we can have as many cannibals as we like :)</span>
+            <span class="k">if</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
+                <span class="k">if</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">result</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+                    <span class="k">continue</span>
+            <span class="k">if</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
+                <span class="k">if</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">result</span><span class="p">[</span><span class="mi">5</span><span class="p">]):</span>
+                    <span class="k">continue</span>
+            <span class="c1"># if there are negative numbers / more than 3 of each cannibals/missionaries</span>
+            <span class="c1"># on the left hand side</span>
+            <span class="k">if</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">result</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">3</span> <span class="ow">or</span> <span class="n">result</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">):</span>
                 <span class="k">continue</span>
-            <span class="c1"># if there are negative numbers / more than 3</span>
-            <span class="c1"># of each canns missionaries</span>
-            <span class="k">if</span><span class="p">(</span><span class="n">state</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">state</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">state</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">3</span> <span class="ow">or</span> <span class="n">state</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">):</span>
+            <span class="c1"># if there are negative numbers / more than 3 of each cannibals/missionaries</span>
+            <span class="c1"># on the right hand side</span>
+            <span class="k">if</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">result</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">result</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">3</span> <span class="ow">or</span> <span class="n">result</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">):</span>
                 <span class="k">continue</span>
-                <span class="c1"># now we need to check boat status</span>
-            <span class="n">b1</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+            <span class="c1"># now we need to check boat status - bit spagetti :)</span>
+            <span class="n">b1</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
             <span class="k">if</span><span class="p">(</span><span class="n">b1</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">b1</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">):</span>
                 <span class="k">continue</span>
-            <span class="n">b2</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+            <span class="n">b2</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
             <span class="k">if</span><span class="p">(</span><span class="n">b2</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">b2</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">):</span>
                 <span class="k">continue</span>    
             <span class="k">if</span><span class="p">(</span><span class="n">b1</span> <span class="o">==</span> <span class="mi">1</span><span class="p">):</span>
@@ -7592,11 +7601,13 @@ a.anchor-link {
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [47]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [46]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="n">problem</span> <span class="o">=</span> <span class="n">Cannibals</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">path_states</span><span class="p">(</span><span class="n">astar_search</span><span class="p">(</span><span class="n">problem</span><span class="p">)))</span>
+<span class="n">states</span> <span class="o">=</span> <span class="n">path_states</span><span class="p">(</span><span class="n">breadth_first_search</span><span class="p">(</span><span class="n">problem</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">states</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">states</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
@@ -7609,9 +7620,21 @@ a.anchor-link {
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>[(3, 3, 1, 0, 0, 0), (2, 2, 0, 1, 1, 1), (2, 3, 1, 0, 1, 0), (1, 2, 0, 1, 2, 1), (2, 2, 1, 0, 1, 1), (0, 2, 0, 1, 3, 1), (1, 2, 1, 0, 2, 1), (0, 1, 0, 1, 3, 2), (1, 1, 1, 0, 2, 2), (0, 0, 0, 1, 3, 3)]
+<pre>[(3, 3, 1, 0, 0, 0), (1, 3, 0, 1, 2, 0), (2, 3, 1, 0, 1, 0), (0, 3, 0, 1, 3, 0), (1, 3, 1, 0, 2, 0), (1, 1, 0, 1, 2, 2), (2, 2, 1, 0, 1, 1), (2, 0, 0, 1, 1, 3), (3, 0, 1, 0, 0, 3), (1, 0, 0, 1, 2, 3), (2, 0, 1, 0, 1, 3), (0, 0, 0, 1, 3, 3)]
+12
 </pre>
 </div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=39f17a48-dd26-435f-8535-e67555abfa7c">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>We don't need fancy algorithms for this. Step costs are identical, so breadth first search is optimal and complete.</p>
 </div>
 </div>
 </div>

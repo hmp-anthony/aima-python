@@ -49,6 +49,15 @@ def expand(problem, node):
         cost = node.path_cost + problem.action_cost(s, action, s1)
         yield Node(s1, node, action, cost)
         
+def expand_and_return_node_list(problem, node):
+    nodes = []
+    s = node.state
+    for action in problem.actions(s):
+        s1 = problem.result(s, action)
+        cost = node.path_cost + problem.action_cost(s, action, s1)
+        nodes.append(Node(s1, node, action, cost))
+    return nodes
+
 
 def path_actions(node):
     "The sequence of actions to get to this node."
@@ -312,6 +321,9 @@ class EightPuzzle(Problem):
         Y = (0, 0, 0, 1, 1, 1, 2, 2, 2)
         return sum(abs(X[s] - X[g]) + abs(Y[s] - Y[g])
                    for (s, g) in zip(node.state, self.goal) if s != 0)
+
+    def h3(self, node):
+        return 2 * self.h2(node)
     
     def h(self, node): return h2(self, node)
     

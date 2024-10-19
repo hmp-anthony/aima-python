@@ -3,7 +3,7 @@
 <html lang="en">
 <head><meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>A_star_vs_RBFS</title><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+<title>agent_generaldomain</title><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
 <style type="text/css">
     pre { line-height: 125%; }
 td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
@@ -7509,64 +7509,135 @@ a.anchor-link {
 </style>
 <!-- End of mermaid configuration --></head>
 <body class="jp-Notebook" data-jp-theme-light="true" data-jp-theme-name="JupyterLab Light">
-<main><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=6fa86ef3-f46e-48fb-ad79-18c359742eb2">
+<main>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=35d7932e-83a9-43c4-9e4e-1061db0ad95f">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>Below I implement a random reflex agent. The domain is passed via a text file called floorplan.txt. There are a few parameters to be mindful of: The chance of the 'Suck' operation executing and the chance of a clean square becoming dirty again. I was carfull to put this functionality in the "correct" place. For instance it is the environments responsibility to get dirty again, but the agents responsibility to have a faulty suck operation that only works 80% of the time.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=8db678b9-8332-4c2d-b5b6-345d1f1d2ae5">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [2]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [21]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">search_2</span> <span class="kn">import</span> <span class="o">*</span>
-<span class="kn">import</span> <span class="nn">math</span>
+<div class="highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">agents</span> <span class="kn">import</span> <span class="o">*</span>
 
-<span class="c1"># My implementation of RBFS</span>
-<span class="k">def</span> <span class="nf">recursive_best_first_search</span><span class="p">(</span><span class="n">problem</span><span class="p">,</span> <span class="n">h</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">RBFS</span><span class="p">(</span><span class="n">problem</span><span class="p">,</span> <span class="n">Node</span><span class="p">(</span><span class="n">problem</span><span class="o">.</span><span class="n">initial</span><span class="p">),</span> <span class="n">math</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">h</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="k">class</span> <span class="nc">VacuumAgent</span><span class="p">(</span><span class="n">Agent</span><span class="p">):</span>
 
-<span class="k">def</span> <span class="nf">RBFS</span><span class="p">(</span><span class="n">problem</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">f_limit</span><span class="p">,</span> <span class="n">h</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">problem</span><span class="o">.</span><span class="n">is_goal</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">state</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">node</span><span class="p">,</span> <span class="mi">0</span>
-    <span class="n">successors</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">expand</span><span class="p">(</span><span class="n">problem</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
-        <span class="n">successors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">successors</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">failure</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">inf</span>
-    <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">successors</span><span class="p">:</span>
-        <span class="n">s</span><span class="o">.</span><span class="n">f</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">g</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">+</span> <span class="n">h</span><span class="p">(</span><span class="n">s</span><span class="p">),</span> <span class="n">g</span><span class="p">(</span><span class="n">node</span><span class="p">)</span> <span class="o">+</span> <span class="n">h</span><span class="p">(</span><span class="n">node</span><span class="p">))</span>
-    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-        <span class="n">successors</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">f</span><span class="p">)</span>
-        <span class="n">best</span> <span class="o">=</span> <span class="n">successors</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">best</span><span class="o">.</span><span class="n">f</span> <span class="o">&gt;</span> <span class="n">f_limit</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">failure</span><span class="p">,</span> <span class="n">best</span><span class="o">.</span><span class="n">f</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">successors</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">alternative</span> <span class="o">=</span> <span class="n">successors</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">f</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">program</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">program</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">location</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">direction</span> <span class="o">=</span> <span class="s1">'R'</span> <span class="c1"># 'R', 'L', 'U', 'D'</span>
+
+<span class="k">def</span> <span class="nf">program</span><span class="p">(</span><span class="n">percept</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">percept</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">chance</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">100</span><span class="p">)</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">chance</span> <span class="o">&gt;</span> <span class="mi">20</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">(</span><span class="s1">'Suck'</span><span class="p">,</span><span class="s1">'None'</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">alternative</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">inf</span>
-        <span class="n">result</span><span class="p">,</span> <span class="n">best</span><span class="o">.</span><span class="n">f</span> <span class="o">=</span> <span class="n">RBFS</span><span class="p">(</span><span class="n">problem</span><span class="p">,</span> <span class="n">best</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">f_limit</span><span class="p">,</span> <span class="n">alternative</span><span class="p">),</span> <span class="n">h</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">failure</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">result</span><span class="p">,</span> <span class="n">best</span><span class="o">.</span><span class="n">f</span>
+            <span class="k">return</span> <span class="p">(</span><span class="s1">'None'</span><span class="p">,</span><span class="s1">'None'</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">bump</span> <span class="o">=</span> <span class="s1">'Bump'</span> <span class="k">if</span> <span class="n">agent</span><span class="o">.</span><span class="n">bump</span> <span class="k">else</span> <span class="s1">'None'</span>
+        <span class="k">return</span> <span class="p">(</span><span class="s1">'Move'</span><span class="p">,</span> <span class="n">bump</span><span class="p">)</span>
 
-<span class="k">def</span> <span class="nf">astar_misplaced_tiles</span><span class="p">(</span><span class="n">problem</span><span class="p">):</span> <span class="k">return</span> <span class="n">astar_search</span><span class="p">(</span><span class="n">problem</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="n">problem</span><span class="o">.</span><span class="n">h1</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">recursive_best_first_misplaced_tiles</span><span class="p">(</span><span class="n">problem</span><span class="p">):</span> <span class="k">return</span> <span class="n">recursive_best_first_search</span><span class="p">(</span><span class="n">problem</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="n">problem</span><span class="o">.</span><span class="n">h1</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">astar_manhatten</span><span class="p">(</span><span class="n">problem</span><span class="p">):</span> <span class="k">return</span> <span class="n">astar_search</span><span class="p">(</span><span class="n">problem</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="n">problem</span><span class="o">.</span><span class="n">h2</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">astar_manhatten_with_weight</span><span class="p">(</span><span class="n">problem</span><span class="p">):</span> <span class="k">return</span> <span class="n">astar_search</span><span class="p">(</span><span class="n">problem</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="n">problem</span><span class="o">.</span><span class="n">h3</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">recursive_best_first_manhatten</span><span class="p">(</span><span class="n">problem</span><span class="p">):</span> <span class="k">return</span> <span class="n">recursive_best_first_search</span><span class="p">(</span><span class="n">problem</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="n">problem</span><span class="o">.</span><span class="n">h2</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">recursive_best_first_manhatten_with_weight</span><span class="p">(</span><span class="n">problem</span><span class="p">):</span> <span class="k">return</span> <span class="n">recursive_best_first_search</span><span class="p">(</span><span class="n">problem</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="n">problem</span><span class="o">.</span><span class="n">h3</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">Environment</span><span class="p">:</span>
+    
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">agents</span> <span class="o">=</span> <span class="p">[]</span>
+        
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">'floorplan.txt'</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">floor_plan</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()))</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">floor_plan</span> <span class="o">=</span> <span class="n">floor_plan</span>
+        
+    <span class="k">def</span> <span class="nf">percept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">agent</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">floor_plan</span><span class="p">[</span><span class="n">agent</span><span class="o">.</span><span class="n">location</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="n">agent</span><span class="o">.</span><span class="n">location</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+
+    <span class="k">def</span> <span class="nf">execute_action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">agent</span><span class="p">,</span> <span class="n">action</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">action</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">'Suck'</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">floor_plan</span><span class="p">[</span><span class="n">agent</span><span class="o">.</span><span class="n">location</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="n">agent</span><span class="o">.</span><span class="n">location</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">agent</span><span class="o">.</span><span class="n">performance</span> <span class="o">+=</span> <span class="mi">100</span>
+        
+        <span class="k">elif</span> <span class="n">action</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">'Move'</span><span class="p">:</span>
+            <span class="n">agent</span><span class="o">.</span><span class="n">performance</span> <span class="o">-=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">action</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">'Bump'</span><span class="p">:</span>
+                <span class="n">agent</span><span class="o">.</span><span class="n">bump</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">agent</span><span class="o">.</span><span class="n">direction</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="s1">'R'</span><span class="p">,</span> <span class="s1">'L'</span><span class="p">,</span> <span class="s1">'U'</span><span class="p">,</span> <span class="s1">'D'</span><span class="p">])</span>
+                <span class="n">agent</span><span class="o">.</span><span class="n">bump</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">move_agent</span><span class="p">(</span><span class="n">agent</span><span class="p">)</span>
+                
+    <span class="k">def</span> <span class="nf">add_dirt</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">x_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">floor_plan</span><span class="p">)</span>
+        <span class="n">y_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">floor_plan</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">x_len</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">y_len</span><span class="p">):</span>
+                <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">floor_plan</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">):</span>
+                    <span class="n">chance</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+                    <span class="k">if</span><span class="p">(</span><span class="n">chance</span> <span class="o">&lt;</span> <span class="mi">5</span><span class="p">):</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">floor_plan</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span>
+                    
+    
+    <span class="k">def</span> <span class="nf">move_agent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">agent</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">agent</span><span class="o">.</span><span class="n">direction</span> <span class="o">==</span> <span class="s1">'R'</span><span class="p">:</span>
+            <span class="n">loc</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">location</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">floor_plan</span><span class="p">[</span><span class="n">loc</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="n">loc</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">agent</span><span class="o">.</span><span class="n">bump</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">agent</span><span class="o">.</span><span class="n">location</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">elif</span> <span class="n">agent</span><span class="o">.</span><span class="n">direction</span> <span class="o">==</span> <span class="s1">'L'</span><span class="p">:</span>
+            <span class="n">loc</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">location</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">floor_plan</span><span class="p">[</span><span class="n">loc</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="n">loc</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">agent</span><span class="o">.</span><span class="n">bump</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">agent</span><span class="o">.</span><span class="n">location</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-=</span> <span class="mi">1</span>
+        <span class="k">elif</span> <span class="n">agent</span><span class="o">.</span><span class="n">direction</span> <span class="o">==</span> <span class="s1">'U'</span><span class="p">:</span>
+            <span class="n">loc</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">location</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">floor_plan</span><span class="p">[</span><span class="n">loc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">][</span><span class="n">loc</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">agent</span><span class="o">.</span><span class="n">bump</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">agent</span><span class="o">.</span><span class="n">location</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-=</span> <span class="mi">1</span>
+        <span class="k">elif</span> <span class="n">agent</span><span class="o">.</span><span class="n">direction</span> <span class="o">==</span> <span class="s1">'D'</span><span class="p">:</span>
+            <span class="n">loc</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">location</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">floor_plan</span><span class="p">[</span><span class="n">loc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">][</span><span class="n">loc</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">agent</span><span class="o">.</span><span class="n">bump</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">agent</span><span class="o">.</span><span class="n">location</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="n">agent</span><span class="o">.</span><span class="n">bump</span>
+
+    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">action</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">program</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">percept</span><span class="p">(</span><span class="n">agent</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_dirt</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">execute_action</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">agents</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">action</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">steps</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">steps</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+    
+    <span class="k">def</span> <span class="nf">display_floor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">floor_plan</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">add_agent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">agent</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">agents</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">agent</span><span class="p">)</span>
 
 
-<span class="n">e1</span> <span class="o">=</span> <span class="n">EightPuzzle</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
-<span class="n">e2</span> <span class="o">=</span> <span class="n">EightPuzzle</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
-<span class="n">e3</span> <span class="o">=</span> <span class="n">EightPuzzle</span><span class="p">((</span><span class="mi">4</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
-<span class="n">e4</span> <span class="o">=</span> <span class="n">EightPuzzle</span><span class="p">((</span><span class="mi">7</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
-<span class="n">e5</span> <span class="o">=</span> <span class="n">EightPuzzle</span><span class="p">((</span><span class="mi">8</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="n">env</span> <span class="o">=</span> <span class="n">Environment</span><span class="p">()</span>
+<span class="n">agent</span> <span class="o">=</span> <span class="n">VacuumAgent</span><span class="p">(</span><span class="n">program</span><span class="p">)</span>
+<span class="n">env</span><span class="o">.</span><span class="n">add_agent</span><span class="p">(</span><span class="n">agent</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"floor before:"</span><span class="p">)</span>
+<span class="n">env</span><span class="o">.</span><span class="n">display_floor</span><span class="p">()</span>
+<span class="n">env</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
 
-<span class="n">report</span><span class="p">([</span><span class="n">breadth_first_search</span><span class="p">,</span>
-        <span class="n">uniform_cost_search</span><span class="p">,</span>
-        <span class="n">recursive_best_first_manhatten</span><span class="p">,</span>
-        <span class="n">recursive_best_first_manhatten_with_weight</span><span class="p">,</span>
-        <span class="n">astar_manhatten</span><span class="p">,</span>
-        <span class="n">astar_manhatten_with_weight</span><span class="p">],</span> <span class="p">[</span><span class="n">e1</span><span class="p">,</span> <span class="n">e2</span><span class="p">,</span> <span class="n">e3</span><span class="p">,</span> <span class="n">e4</span><span class="p">,</span> <span class="n">e5</span><span class="p">])</span> 
+<span class="nb">print</span><span class="p">(</span><span class="s2">"floor after:"</span><span class="p">)</span>
+<span class="n">env</span><span class="o">.</span><span class="n">display_floor</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"performance score: "</span><span class="p">,</span><span class="n">agent</span><span class="o">.</span><span class="n">performance</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -7579,137 +7650,35 @@ a.anchor-link {
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>breadth_first_search:
-       81 nodes |       82 goal |    5 cost |      35 actions | EightPuzzle((1, 4, 2, 0, 7, 5, 3, 6, 8),
-  160,948 nodes |  160,949 goal |   22 cost |  59,960 actions | EightPuzzle((1, 2, 3, 4, 5, 6, 7, 8, 0),
-  218,263 nodes |  218,264 goal |   23 cost |  81,829 actions | EightPuzzle((4, 0, 2, 5, 1, 3, 7, 8, 6),
-  418,771 nodes |  418,772 goal |   26 cost | 156,533 actions | EightPuzzle((7, 2, 4, 5, 0, 6, 8, 3, 1),
-  448,667 nodes |  448,668 goal |   27 cost | 167,799 actions | EightPuzzle((8, 6, 7, 2, 5, 4, 3, 0, 1),
-1,246,730 nodes |1,246,735 goal |  103 cost | 466,156 actions | TOTAL
-
-uniform_cost_search:
-      124 nodes |       46 goal |    5 cost |      50 actions | EightPuzzle((1, 4, 2, 0, 7, 5, 3, 6, 8),
-  214,952 nodes |   79,187 goal |   22 cost |  79,208 actions | EightPuzzle((1, 2, 3, 4, 5, 6, 7, 8, 0),
-  300,925 nodes |  112,082 goal |   23 cost | 112,104 actions | EightPuzzle((4, 0, 2, 5, 1, 3, 7, 8, 6),
-  457,766 nodes |  171,571 goal |   26 cost | 171,596 actions | EightPuzzle((7, 2, 4, 5, 0, 6, 8, 3, 1),
-  466,441 nodes |  174,474 goal |   27 cost | 174,500 actions | EightPuzzle((8, 6, 7, 2, 5, 4, 3, 0, 1),
-1,440,208 nodes |  537,360 goal |  103 cost | 537,458 actions | TOTAL
-
-recursive_best_first_manhatten:
-       15 nodes |        6 goal |    5 cost |      10 actions | EightPuzzle((1, 4, 2, 0, 7, 5, 3, 6, 8),
-  271,746 nodes |   99,853 goal |   22 cost |  99,874 actions | EightPuzzle((1, 2, 3, 4, 5, 6, 7, 8, 0),
-2,807,027 nodes |1,042,820 goal |   23 cost |1,042,842 actions | EightPuzzle((4, 0, 2, 5, 1, 3, 7, 8, 6),
-  746,166 nodes |  284,844 goal |   26 cost | 284,869 actions | EightPuzzle((7, 2, 4, 5, 0, 6, 8, 3, 1),
-  326,744 nodes |  126,504 goal |   27 cost | 126,530 actions | EightPuzzle((8, 6, 7, 2, 5, 4, 3, 0, 1),
-4,151,698 nodes |1,554,027 goal |  103 cost |1,554,125 actions | TOTAL
-
-recursive_best_first_manhatten_with_weight:
-       15 nodes |        6 goal |    5 cost |      10 actions | EightPuzzle((1, 4, 2, 0, 7, 5, 3, 6, 8),
-2,409,806 nodes |  901,511 goal |   24 cost | 901,534 actions | EightPuzzle((1, 2, 3, 4, 5, 6, 7, 8, 0),
-20,658,284 nodes |7,566,616 goal |   25 cost |7,566,640 actions | EightPuzzle((4, 0, 2, 5, 1, 3, 7, 8, 6),
-  588,906 nodes |  211,503 goal |   30 cost | 211,532 actions | EightPuzzle((7, 2, 4, 5, 0, 6, 8, 3, 1),
-  597,734 nodes |  233,773 goal |   33 cost | 233,805 actions | EightPuzzle((8, 6, 7, 2, 5, 4, 3, 0, 1),
-24,254,745 nodes |8,913,409 goal |  117 cost |8,913,521 actions | TOTAL
-
-astar_manhatten:
-       15 nodes |        6 goal |    5 cost |      10 actions | EightPuzzle((1, 4, 2, 0, 7, 5, 3, 6, 8),
-    3,614 nodes |    1,349 goal |   22 cost |   1,370 actions | EightPuzzle((1, 2, 3, 4, 5, 6, 7, 8, 0),
-    5,373 nodes |    2,010 goal |   23 cost |   2,032 actions | EightPuzzle((4, 0, 2, 5, 1, 3, 7, 8, 6),
-   10,832 nodes |    4,086 goal |   26 cost |   4,111 actions | EightPuzzle((7, 2, 4, 5, 0, 6, 8, 3, 1),
-   11,669 nodes |    4,417 goal |   27 cost |   4,443 actions | EightPuzzle((8, 6, 7, 2, 5, 4, 3, 0, 1),
-   31,503 nodes |   11,868 goal |  103 cost |  11,966 actions | TOTAL
-
-astar_manhatten_with_weight:
-       15 nodes |        6 goal |    5 cost |      10 actions | EightPuzzle((1, 4, 2, 0, 7, 5, 3, 6, 8),
-    1,720 nodes |      633 goal |   24 cost |     656 actions | EightPuzzle((1, 2, 3, 4, 5, 6, 7, 8, 0),
-    1,908 nodes |      709 goal |   25 cost |     733 actions | EightPuzzle((4, 0, 2, 5, 1, 3, 7, 8, 6),
-    1,312 nodes |      489 goal |   30 cost |     518 actions | EightPuzzle((7, 2, 4, 5, 0, 6, 8, 3, 1),
-    2,519 nodes |      935 goal |   29 cost |     963 actions | EightPuzzle((8, 6, 7, 2, 5, 4, 3, 0, 1),
-    7,474 nodes |    2,772 goal |  113 cost |   2,880 actions | TOTAL
-
+<pre>floor before:
+[[0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+ [0 1 1 2 1 1 1 1 1 1 1 1 1 1 0]
+ [0 0 1 0 1 0 1 0 2 2 2 2 2 2 0]
+ [0 0 1 0 1 1 2 1 1 1 1 0 0 0 0]
+ [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]]
+floor after:
+[[0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+ [0 2 2 2 2 2 1 1 2 2 2 2 2 2 0]
+ [0 0 2 0 1 0 1 0 2 2 2 2 2 2 0]
+ [0 0 2 0 2 2 1 2 2 2 2 0 0 0 0]
+ [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]]
+performance score:  1519
 </pre>
 </div>
 </div>
 </div>
 </div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=9d5358ae-7b69-436d-a52a-2849a385737d">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>We can see that A* expands significantly less nodes than RBFS. This is because A* maintains a queue which prevents it from needlessly re-expanding nodes. AIMA asks us to consider what will happen if we add a random constant to the heuristic in RBFS. To get a larger view of what happens to both A* and RBFS when we weight the heuristic I will apply a weighting to both. From the above results we can see that the situation with RBFS is not clear cut. Sometimes we exapnd significantly more nodes and sometimes we expand significantly less. With A* we get the usual success story.</p>
-<p>However, we should look at the time taken for each of the algorithms.</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=d164c550-188f-46d8-85b4-7f79d0db9ea6">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=9473f4a6-7c53-4161-aba2-7aab985b938e">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [4]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">time</span>
-
-<span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-<span class="n">recursive_best_first_manhatten</span><span class="p">(</span><span class="n">e4</span><span class="p">)</span>
-<span class="n">t1</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Time taken to execute RBFS: "</span><span class="p">,</span> <span class="n">t1</span> <span class="o">-</span> <span class="n">t0</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Execution time per node: "</span><span class="p">,</span> <span class="p">(</span><span class="n">t1</span> <span class="o">-</span> <span class="n">t0</span><span class="p">)</span> <span class="o">/</span> <span class="mi">746</span><span class="p">,</span><span class="mi">166</span><span class="p">)</span>
-
-<span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-<span class="n">recursive_best_first_manhatten_with_weight</span><span class="p">(</span><span class="n">e4</span><span class="p">)</span>
-<span class="n">t1</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Time taken to execute weighted-RBFS: "</span><span class="p">,</span> <span class="n">t1</span> <span class="o">-</span> <span class="n">t0</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Execution time per node: "</span><span class="p">,</span> <span class="p">(</span><span class="n">t1</span> <span class="o">-</span> <span class="n">t0</span><span class="p">)</span> <span class="o">/</span> <span class="mi">588</span><span class="p">,</span><span class="mi">906</span><span class="p">)</span>
-
-<span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-<span class="n">astar_manhatten</span><span class="p">(</span><span class="n">e4</span><span class="p">)</span>
-<span class="n">t1</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Time taken to execute A*: "</span><span class="p">,</span> <span class="n">t1</span> <span class="o">-</span> <span class="n">t0</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Execution time per node: "</span><span class="p">,</span> <span class="p">(</span><span class="n">t1</span> <span class="o">-</span> <span class="n">t0</span><span class="p">)</span> <span class="o">/</span> <span class="mi">10</span><span class="p">,</span><span class="mi">832</span><span class="p">)</span>
-
-<span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-<span class="n">astar_manhatten_with_weight</span><span class="p">(</span><span class="n">e4</span><span class="p">)</span>
-<span class="n">t1</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Time taken to execute weighted-A*: "</span><span class="p">,</span> <span class="n">t1</span> <span class="o">-</span> <span class="n">t0</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Execution time per node: "</span><span class="p">,</span> <span class="p">(</span><span class="n">t1</span> <span class="o">-</span> <span class="n">t0</span><span class="p">)</span> <span class="o">/</span> <span class="mi">1</span><span class="p">,</span><span class="mi">312</span><span class="p">)</span>
+<div class="highlight hl-ipython3"><pre><span></span> 
 </pre></div>
 </div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Time taken to execute RBFS:  7.069175720214844
-Execution time per node:  0.009476106863558771 166
-Time taken to execute weighted-RBFS:  5.464362859725952
-Execution time per node:  0.009293134115180192 906
-Time taken to execute A*:  0.08570456504821777
-Execution time per node:  0.008570456504821777 832
-Time taken to execute weighted-A*:  0.008708953857421875
-Execution time per node:  0.008708953857421875 312
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=9e92c2f7-de5b-4527-87fe-c348babc28e6">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>While RBFS takes significantly longer, the cost per node is about the same. This is because RBFS does not maintain a queue.</p>
 </div>
 </div>
 </div>

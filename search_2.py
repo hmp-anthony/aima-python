@@ -25,7 +25,6 @@ class Problem(object):
     def __str__(self):
         return '{}({!r}, {!r})'.format(
             type(self).__name__, self.initial, self.goal)
-    
 
 class Node:
     "A Node in a search tree."
@@ -39,8 +38,7 @@ class Node:
     
 failure = Node('failure', path_cost=math.inf) # Indicates an algorithm couldn't find a solution.
 cutoff  = Node('cutoff',  path_cost=math.inf) # Indicates iterative deepening search was cut off.
-    
-    
+
 def expand(problem, node):
     "Expand a node, generating the children nodes."
     s = node.state

@@ -19,10 +19,21 @@ def cycle_crossover(A, B):
             n = B.index(cycle[-1])
             child[n] = A[n]
             cycle.append(A[n])
-            print(cycle_1)
-        
-        print("the end")
+
+        i = child.index(None)
+        child[i] = B[i]
+        cycle = [B[i]]
+        n = A.index(B[i])
+        child[n] = B[n]
+        cycle.append(B[n])
+        while(cycle[-1] != cycle[0]):
+            n = A.index(cycle[-1])
+            child[n] = B[n]
+            cycle.append(B[n])
+
         print(child)
+
+        
 
 
 cycle_crossover(A, B)

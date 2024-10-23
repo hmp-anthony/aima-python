@@ -1,6 +1,5 @@
 import random 
 
-
 def cycle_crossover(A, B):
     n = len(A)
     child = [None] * n
@@ -17,18 +16,32 @@ def cycle_crossover(A, B):
             child[n] = A[n]
             cycle.append(A[n])
 
-        i = child.index(None)
-        child[i] = B[i]
-        cycle = [B[i]]
-        n = A.index(B[i])
-        child[n] = B[n]
-        cycle.append(B[n])
-        while(cycle[-1] != cycle[0]):
-            n = A.index(cycle[-1])
+        while(None in child):
+            i = child.index(None)
+            child[i] = B[i]
+            cycle = [B[i]]
+            n = A.index(B[i])
             child[n] = B[n]
             cycle.append(B[n])
+            while(cycle[-1] != cycle[0]):
+                n = A.index(cycle[-1])
+                child[n] = B[n]
+                cycle.append(B[n])
+       
+            if None not in child:
+                break
+            i = child.index(None)
+            child[i] = A[i]
+            cycle = [A[i]]
+            n = B.index(A[i])
+            child[n] = A[n]
+            cycle.append(A[n])
+            while(cycle[-1] != cycle[0]):
+                n = B.index(cycle[-1])
+                child[n] = A[n]
+                cycle.append(A[n])
 
-        print(child)
+        return child
 
     if(case == 1):
         # the first cycle
@@ -42,21 +55,36 @@ def cycle_crossover(A, B):
             child[n] = B[n]
             cycle.append(B[n])
 
-        i = child.index(None)
-        child[i] = A[i]
-        cycle = [A[i]]
-        n = B.index(A[i])
-        child[n] = A[n]
-        cycle.append(A[n])
-        while(cycle[-1] != cycle[0]):
-            n = B.index(cycle[-1])
+        while(None in child):
+            i = child.index(None)
+            child[i] = A[i]
+            cycle = [A[i]]
+            n = B.index(A[i])
             child[n] = A[n]
             cycle.append(A[n])
+            while(cycle[-1] != cycle[0]):
+                n = B.index(cycle[-1])
+                child[n] = A[n]
+                cycle.append(A[n])
+       
+            if None not in child:
+                break
+            i = child.index(None)
+            child[i] = B[i]
+            cycle = [B[i]]
+            n = A.index(B[i])
+            child[n] = B[n]
+            cycle.append(B[n])
+            while(cycle[-1] != cycle[0]):
+                n = A.index(cycle[-1])
+                child[n] = B[n]
+                cycle.append(B[n])
         
-        print(child)
+        return child
 
-A = [1, 2, 3, 4, 5, 6, 7, 8]
-B = [2, 4, 6, 8, 7, 5, 3, 1]
-cycle_crossover(A, B)
+A = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'Z', 'Y', 'Q']
+B = ['A', 'D', 'G', 'B', 'F', 'E', 'C', 'Y', 'Z', 'Q']
+
+print(cycle_crossover(A, B))
 
 
